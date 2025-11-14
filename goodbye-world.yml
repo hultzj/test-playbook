@@ -1,0 +1,18 @@
+---
+- name: Goodbye World Playbook
+  hosts: all
+  gather_facts: false
+  
+  tasks:
+    - name: Print Goodbye World message
+      ansible.builtin.debug:
+        msg: "Goodbye World! Thanks for running this playbook on {{ inventory_hostname }}"
+    
+    - name: Display farewell
+      ansible.builtin.debug:
+        msg: "👋 See you next time on Ansible Automation Platform!"
+    
+    - name: Show completion message
+      ansible.builtin.debug:
+        msg: "✓ Goodbye World playbook completed successfully!"
+

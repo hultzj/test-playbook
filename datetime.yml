@@ -1,0 +1,34 @@
+---
+- name: DateTime Information Playbook
+  hosts: all
+  gather_facts: true
+  
+  tasks:
+    - name: Display current date and time
+      ansible.builtin.debug:
+        msg: "Current timestamp (ISO 8601): {{ ansible_date_time.iso8601 }}"
+    
+    - name: Display date in human-readable format
+      ansible.builtin.debug:
+        msg: "Date: {{ ansible_date_time.date }}"
+    
+    - name: Display time in human-readable format
+      ansible.builtin.debug:
+        msg: "Time: {{ ansible_date_time.time }}"
+    
+    - name: Display timezone information
+      ansible.builtin.debug:
+        msg: "Timezone: {{ ansible_date_time.tz }}"
+    
+    - name: Display Unix epoch time
+      ansible.builtin.debug:
+        msg: "Unix Epoch: {{ ansible_date_time.epoch }}"
+    
+    - name: Display day of week
+      ansible.builtin.debug:
+        msg: "Day of Week: {{ ansible_date_time.weekday_number }} ({{ ansible_date_time.weekday }})"
+    
+    - name: Show completion message
+      ansible.builtin.debug:
+        msg: "✓ DateTime playbook completed successfully!"
+

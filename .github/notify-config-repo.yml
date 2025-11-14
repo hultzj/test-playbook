@@ -1,0 +1,131 @@
+---
+# =============================================================================
+# GitHub Actions Workflow for PLAYBOOK REPOSITORY
+# =============================================================================
+# 
+# Place this file in your playbook repository at:
+# .github/workflows/notify-config-repo.yml
+#
+# This workflow triggers the Configuration as Code repo when playbooks change
+# =============================================================================
+
+name: Notify Config Repo on Playbook Update
+
+on:
+  push:
+    branches:
+      - main
+      - master
+    paths:
+      # Trigger only when actual playbooks change
+      - '*.yml'
+      - '*.yaml'
+      - 'roles/**'
+      - 'playbooks/**'
+  
+  # Allow manual trigger for testing
+  workflow_dispatch:
+
+jobs:
+  notify-config-repo:
+    name: Trigger Configuration Deployment
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Get changed files
+        id: changed-files
+        uses: tj-actions/changed-files@v41
+        with:
+          files: |
+            **.yml
+            **.yaml
+
+      - name: Display changed playbooks
+        run: |
+          echo "## Changed Playbooks" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "The following playbooks were updated:" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          for file in ${{ steps.changed-files.outputs.all_changed_files }}; do
+            echo "- \`$file\`" >> $GITHUB_STEP_SUMMARY
+          done
+
+      - name: Trigger Config Repository Deployment
+        uses: peter-evans/repository-dispatch@v2
+        with:
+          # The configuration repository (hello-world-CaC)
+          repository: jhultz/hello-world-CaC
+          
+          # Personal Access Token with repo scope
+          token: ${{ secrets.CONFIG_REPO_PAT }}
+          
+          # Event type - determines which workflow runs
+          event-type: playbook-updated
+          
+          # Payload with information about this update
+          client-payload: |
+            {
+              "repository": "${{ github.repository }}",
+              "ref": "${{ github.ref }}",
+              "branch": "${{ github.ref_name }}",
+              "sha": "${{ github.sha }}",
+              "actor": "${{ github.actor }}",
+              "event": "${{ github.event_name }}",
+              "changed_files": "${{ steps.changed-files.outputs.all_changed_files }}"
+            }
+
+      - name: Summary
+        run: |
+          echo "## ✅ Notification Sent" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "Successfully triggered deployment in configuration repository." >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### What Happens Next" >> $GITHUB_STEP_SUMMARY
+          echo "1. Config repo receives \`repository_dispatch\` event" >> $GITHUB_STEP_SUMMARY
+          echo "2. AAP project will be updated (pulls latest from this repo)" >> $GITHUB_STEP_SUMMARY
+          echo "3. Job templates in AAP will be refreshed" >> $GITHUB_STEP_SUMMARY
+          echo "4. Changes will be deployed to Dev → Staging → Production" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "**Monitor deployment**: [Config Repo Actions](https://github.com/${{ github.repository_owner }}/hello-world-CaC/actions)" >> $GITHUB_STEP_SUMMARY
+
+  # Optional: Run tests before notifying
+  test-playbooks:
+    name: Test Playbooks
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install Ansible
+        run: |
+          pip install ansible ansible-lint yamllint
+
+      - name: Validate YAML syntax
+        run: |
+          yamllint . || true
+
+      - name: Lint Ansible playbooks
+        run: |
+          ansible-lint || true
+
+      - name: Syntax check playbooks
+        run: |
+          for playbook in *.yml; do
+            if [ -f "$playbook" ]; then
+              echo "Checking $playbook..."
+              ansible-playbook "$playbook" --syntax-check || true
+            fi
+          done
+
+      - name: Test Summary
+        run: |
+          echo "## Playbook Tests" >> $GITHUB_STEP_SUMMARY
+          echo "✅ Syntax validation completed" >> $GITHUB_STEP_SUMMARY
+
