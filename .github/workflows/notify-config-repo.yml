@@ -27,9 +27,49 @@ on:
   workflow_dispatch:
 
 jobs:
+  # Run tests first before notifying
+  test-playbooks:
+    name: Test Playbooks
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install Ansible
+        run: |
+          pip install ansible ansible-lint yamllint
+
+      - name: Validate YAML syntax
+        run: |
+          yamllint . || true
+
+      - name: Lint Ansible playbooks
+        run: |
+          ansible-lint || true
+
+      - name: Syntax check playbooks
+        run: |
+          for playbook in *.yml; do
+            if [ -f "$playbook" ]; then
+              echo "Checking $playbook..."
+              ansible-playbook "$playbook" --syntax-check || true
+            fi
+          done
+
+      - name: Test Summary
+        run: |
+          echo "## Playbook Tests" >> $GITHUB_STEP_SUMMARY
+          echo "✅ Syntax validation completed" >> $GITHUB_STEP_SUMMARY
+
   notify-config-repo:
     name: Trigger Configuration Deployment
     runs-on: ubuntu-latest
+    needs: test-playbooks
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -89,43 +129,3 @@ jobs:
           echo "4. Changes will be deployed to Dev → Staging → Production" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
           echo "**Monitor deployment**: [Config Repo Actions](https://github.com/${{ github.repository_owner }}/hello-world-CaC/actions)" >> $GITHUB_STEP_SUMMARY
-
-  # Optional: Run tests before notifying
-  test-playbooks:
-    name: Test Playbooks
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-
-      - name: Set up Python
-        uses: actions/setup-python@v5
-        with:
-          python-version: '3.11'
-
-      - name: Install Ansible
-        run: |
-          pip install ansible ansible-lint yamllint
-
-      - name: Validate YAML syntax
-        run: |
-          yamllint . || true
-
-      - name: Lint Ansible playbooks
-        run: |
-          ansible-lint || true
-
-      - name: Syntax check playbooks
-        run: |
-          for playbook in *.yml; do
-            if [ -f "$playbook" ]; then
-              echo "Checking $playbook..."
-              ansible-playbook "$playbook" --syntax-check || true
-            fi
-          done
-
-      - name: Test Summary
-        run: |
-          echo "## Playbook Tests" >> $GITHUB_STEP_SUMMARY
-          echo "✅ Syntax validation completed" >> $GITHUB_STEP_SUMMARY
-
