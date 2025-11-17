@@ -14,7 +14,7 @@ name: Notify Config Repo on Playbook Update
 on:
   push:
     branches:
-    #  - main
+#      - main
       - develop
     paths:
       # Trigger only when actual playbooks change
