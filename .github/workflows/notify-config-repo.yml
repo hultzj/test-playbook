@@ -56,7 +56,7 @@ jobs:
         uses: peter-evans/repository-dispatch@v2
         with:
           # The configuration repository (hello-world-CaC)
-          repository: jhultz/hello-world-CaC
+          repository: hultzj/hello-world-CaC
           
           # Personal Access Token with repo scope
           token: ${{ secrets.CONFIG_REPO_PAT }}
