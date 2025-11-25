@@ -6,11 +6,11 @@
   tasks:
     - name: Print Goodbye World message
       ansible.builtin.debug:
-        msg: "Goodbye World! Thanks for running this playbook on {{ inventory_hostname }}"
+        msg: "Goodbye World! Thanks for running this playbook on {{ inventory_hostname }} Final Part 6"
     
     - name: Display farewell
       ansible.builtin.debug:
-        msg: "👋 See you next time on Ansible Automation Platform!"
+        msg: "👋 See you next time on Ansible Automation Platform 1!"
     
     - name: Show completion message
       ansible.builtin.debug:
