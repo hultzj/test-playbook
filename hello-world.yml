@@ -10,7 +10,7 @@
     
     - name: Display greeting
       ansible.builtin.debug:
-        msg: "👋 Welcome to Ansible Automation Platform!"
+        msg: "👋 Welcome to Ansible Automation Platform! 222"
     
     - name: Show a success message
       ansible.builtin.debug:
