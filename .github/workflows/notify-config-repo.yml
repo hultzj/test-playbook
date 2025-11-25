@@ -13,9 +13,6 @@ name: Notify Config Repo on Playbook Update
 
 on:
   push:
-    branches:
-#      - main
-      - develop
     paths:
       # Trigger only when actual playbooks change
       - '*.yml'
@@ -70,6 +67,8 @@ jobs:
     name: Trigger Configuration Deployment
     runs-on: ubuntu-latest
     needs: test-playbooks
+    # Only notify config repo when changes are on main or develop branches
+    if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/develop'
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
