@@ -10,7 +10,7 @@
     
     - name: Display farewell
       ansible.builtin.debug:
-        msg: "👋 See you next time on Ansible Automation Platform!"
+        msg: "👋 See you next time on Ansible Automation Platform 1!"
     
     - name: Show completion message
       ansible.builtin.debug:
